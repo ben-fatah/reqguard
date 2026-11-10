@@ -26,7 +26,7 @@ Command line, without the web app:
 python -m reqguard review benchmark/srs_inventory_v1.md
 python -m reqguard idea "A mobile app for students to book study rooms"
 python -m reqguard.bench          # rule precision / recall on the labelled benchmark
-python -m pytest -q               # 112 tests
+python -m pytest -q               # 113 tests
 ```
 
 Lint (dev only, not in `requirements.txt`): `pip install ruff`, then `ruff check .`
@@ -143,7 +143,7 @@ reqguard/
   report.py     Markdown export
   bench.py      precision/recall on the labelled benchmark
   web/          single-page interface
-tests/          112 pytest tests
+tests/          113 pytest tests
 benchmark/      synthetic SRS with planted defects + labels
 docs/           M1 documents (charter, requirements, ADRs, risks, cost model)
 ```
@@ -157,6 +157,7 @@ docs/           M1 documents (charter, requirements, ADRs, risks, cost model)
 - The benchmark was written by the team, so its precision and recall are optimistic; an independent benchmark is still needed.
 - One process with SQLite: fine for a class demo, not for many concurrent users.
 - Text containing {{...}} may be altered by DevAI's template engine.
+- If the VPN/network is off, DevAI cannot reach its model, yet it marks the agent run "success" with an empty reply. ReqGuard treats an empty reply as a failed run (one retry), then stops with "DevAI returned an empty reply. Check your VPN/network, then DevAI sign-in and model." (`devai ping` shows the same message).
 - DevAI cannot run an agent with no tools, so each ReqGuard agent can still read and list files. Its flow runs in an empty sandbox folder, so there is nothing to read (risk RK-12).
 - Under DevAI, temperature is ignored and the model is a global DevAI setting, so AI findings vary between runs. The score does not, because it counts rule findings only (ADR-005, risk RK-13).
 - The score ignores problems that only the AI found. Read the "AI advisory" count next to the score.

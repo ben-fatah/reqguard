@@ -43,14 +43,13 @@ reqguard/                       the application package
     consistency.py              C1 conflicting durations, C2 near-duplicates
   prompts/                      one instruction file per agent + _shared.md (security rules for all)
   web/index.html                single-page UI (engineer and reviewer views)
-tests/                          112 pytest tests (agents, API, benchmark, DevAI client, grounding, LLM client, pipeline, rules)
+tests/                          113 pytest tests (agents, API, benchmark, DevAI client, grounding, LLM client, pipeline, rules)
 benchmark/                      synthetic 40-requirement SRS with planted defects + its labels
 tools/                          coupling_check.py and cost_model.py (M1 evidence scripts)
 architecture/                   module dependency specs used by the coupling check (M1)
 reports/                        saved outputs of the two tools (M1)
 docs/                           M1 documents, ADR-001…005, AI drafts, this guide
 .env.example                    configuration template (copy to .env, never commit .env)
-.claude/settings.json           Claude Code project settings (no commit attribution trailers)
 ruff.toml                       lint configuration
 requirements.txt, pytest.ini    runtime dependencies and test configuration
 README.md, RULES.md             quick start; team rules
@@ -166,11 +165,11 @@ Everything except the summary sentence is plain Python:
 
 Each agent `<name>` exists in DevAI as agent `reqguard-<name>` (instructions = the same prompt files + "Do not use any tools.") and flow `reqguard-<name>`: webhook trigger → agent node with prompt `{{trigger.payload.message}}` → output. `python -m reqguard.devai setup` creates both ([devai.py:49-84](../reqguard/devai.py#L49-L84)). The flows run in an empty sandbox folder, so the read/list tools DevAI always grants see nothing.
 
-- **Webhook** ([devai_flow.py:129](../reqguard/llm/devai_flow.py#L129)): `POST /webhook/reqguard-<name>` with `{"message": <user message>}` returns a `runId`. The text is sent unchanged, because changing it would break the grounding check. A warning is logged if it contains `{{`, which DevAI's template engine may alter.
-- **Polling** ([devai_flow.py:146-157](../reqguard/llm/devai_flow.py#L146-L157)): `GET /api/flows/reqguard-<name>/runs/<runId>` every second. On `success`, the reply is the `output` of the step whose `nodeType` is `agent` ([devai_flow.py:175](../reqguard/llm/devai_flow.py#L175)).
-- **Timeout and retry**: after `REQGUARD_DEVAI_TIMEOUT` seconds (default 180) the run is cancelled and an `LLMError` is raised. A failed run or a 5xx is retried once ([devai_flow.py:117](../reqguard/llm/devai_flow.py#L117)). A timeout, a missing flow, or connection refused ("DevAI is not running: open DevAI Desktop") is not retried.
-- **Model traceability** ([devai_flow.py:86-107](../reqguard/llm/devai_flow.py#L86-L107)): the model is a global DevAI setting, so `begin_run()` reads `modelId` from `GET http://127.0.0.1:7588/` once per run. It is returned as `LLMReply.model`, stored in the run usage, and shown in the UI, the report and the CLI.
-- **Drift warning** ([devai_flow.py:185](../reqguard/llm/devai_flow.py#L185)): if the deployed instructions differ from `reqguard/prompts/`, a warning says to re-run `setup`.
+- **Webhook** ([devai_flow.py:137](../reqguard/llm/devai_flow.py#L137)): `POST /webhook/reqguard-<name>` with `{"message": <user message>}` returns a `runId`. The text is sent unchanged, because changing it would break the grounding check. A warning is logged if it contains `{{`, which DevAI's template engine may alter.
+- **Polling** ([devai_flow.py:154-165](../reqguard/llm/devai_flow.py#L154-L165)): `GET /api/flows/reqguard-<name>/runs/<runId>` every second. On `success`, the reply is the `output` of the step whose `nodeType` is `agent` ([devai_flow.py:183](../reqguard/llm/devai_flow.py#L183)).
+- **Timeout and retry**: after `REQGUARD_DEVAI_TIMEOUT` seconds (default 180) the run is cancelled and an `LLMError` is raised. A failed run, an empty reply (DevAI cannot reach its model, e.g. VPN off) or a 5xx is retried once ([devai_flow.py:123](../reqguard/llm/devai_flow.py#L123)). A timeout, a missing flow, or connection refused ("DevAI is not running: open DevAI Desktop") is not retried.
+- **Model traceability** ([devai_flow.py:92-112](../reqguard/llm/devai_flow.py#L92-L112)): the model is a global DevAI setting, so `begin_run()` reads `modelId` from `GET http://127.0.0.1:7588/` once per run. It is returned as `LLMReply.model`, stored in the run usage, and shown in the UI, the report and the CLI.
+- **Drift warning** ([devai_flow.py:196](../reqguard/llm/devai_flow.py#L196)): if the deployed instructions differ from `reqguard/prompts/`, a warning says to re-run `setup`.
 
 ### g) Store — [store.py](../reqguard/store.py)
 
@@ -204,7 +203,7 @@ pip install -r requirements.txt
 | Offline (mock model, no AI calls) | leave `REQGUARD_LLM` unset, then `uvicorn reqguard.api:app --reload` → http://127.0.0.1:8000 |
 | With DevAI | open DevAI Desktop; `copy .env.example .env` (sets `REQGUARD_LLM=devai`); `python -m reqguard.devai setup`; `python -m reqguard.devai check`; `python -m reqguard.devai ping`; then the web app or the CLI |
 | CLI review | `python -m reqguard review benchmark/srs_inventory_v1.md` (add `--json` for the full result; `REQGUARD_LOG=INFO` shows agent timings) |
-| Tests | `python -m pytest -q` (112 tests, offline) |
+| Tests | `python -m pytest -q` (113 tests, offline) |
 | Lint | `pip install ruff`, then `ruff check .` |
 | Rule benchmark | `python -m reqguard.bench benchmark/srs_inventory_v1.labels.json` (rule precision / recall) |
 

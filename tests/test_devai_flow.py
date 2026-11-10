@@ -86,6 +86,18 @@ def test_failed_run_then_success_on_the_retry():
     assert fake.webhooks == 2
 
 
+def test_empty_reply_is_a_failed_run_retried_once_and_ping_shows_it(capsys):
+    """DevAI marks a run "success" with an empty output when its model is unreachable (VPN off)."""
+    fake = FakeDevAI(["success"], output="  \n ")
+    msg = "DevAI returned an empty reply. Check your VPN/network, then DevAI sign-in and model."
+    with pytest.raises(LLMError) as err:
+        make(fake).complete("s", "u", agent="extractor")
+    assert str(err.value) == msg
+    assert fake.webhooks == 2                      # counted like a failed run: one retry, never more
+    assert devai.cmd_ping(make(FakeDevAI(["success"], output="")), "x") == 1
+    assert msg in capsys.readouterr().err
+
+
 def test_timeout_cancels_the_run_and_is_not_retried():
     fake = FakeDevAI(["running"])
     with pytest.raises(LLMError, match="timed out"):

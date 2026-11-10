@@ -36,6 +36,7 @@ DEFAULT_HOST_URL = "http://127.0.0.1:7588"
 DEFAULT_TIMEOUT = 180.0
 PREFIX = "reqguard-"
 NOT_RUNNING = "DevAI is not running: open DevAI Desktop"
+EMPTY_REPLY = "DevAI returned an empty reply. Check your VPN/network, then DevAI sign-in and model."
 NO_TOOLS_LINE = "Do not use any tools. Answer only from the message."
 UNKNOWN_MODEL = "devai/unknown-model"
 _WAITING = {"running", "pending", "queued", "accepted"}
@@ -57,6 +58,11 @@ def devai_home() -> Path:
 
 class _RunFailed(Exception):
     """A DevAI run failed or the server returned 5xx: worth one retry."""
+
+
+class _EmptyReply(_RunFailed):
+    """DevAI marked the run "success" but the agent output is empty: its model call failed
+    (seen when the VPN/network was off). Counted like a failed run."""
 
 
 class DevAIFlowClient:
@@ -114,12 +120,14 @@ class DevAIFlowClient:
         model = self.model
         start = time.monotonic()
         log.info("%s: start", fid)
-        for attempt in range(2):   # at most one retry, only for a failed run or a 5xx
+        for attempt in range(2):   # at most one retry: failed run, empty reply or 5xx only
             try:
                 text, step = self._run_once(fid, user)
                 break
             except _RunFailed as exc:
                 if attempt == 1:
+                    if isinstance(exc, _EmptyReply):
+                        raise LLMError(EMPTY_REPLY) from None
                     raise LLMError(f"DevAI flow {fid} failed: {exc}") from None
                 log.warning("%s: %s; retrying once", fid, exc)
         log.info("%s: end after %.1f s (DevAI agent step %s -> %s)", fid, time.monotonic() - start,
@@ -180,7 +188,10 @@ class DevAIFlowClient:
         if step.get("activity"):
             log.warning("%s: the DevAI agent used tools (%d activity entries)", fid, len(step["activity"]))
         out = step["output"]
-        return (out if isinstance(out, str) else json.dumps(out)), step
+        text = out if isinstance(out, str) else json.dumps(out)
+        if not text.strip():
+            raise _EmptyReply(f"run {run.get('id')} returned an empty agent reply")
+        return text, step
 
     def _check_deployed_prompt(self, agent: str, system: str) -> None:
         """Warn once per agent if the DevAI copy of the instructions differs from prompts/*.md."""
