@@ -1,0 +1,22 @@
+{
+  "name": "Option A - modular monolith (chosen)",
+  "modules": {
+    "web.routes_documents": {"context": "web", "calls": ["identity.auth", "ingestion.upload", "pipeline.orchestrator"]},
+    "web.routes_review":    {"context": "web", "calls": ["identity.auth", "review.service"]},
+    "web.routes_reports":   {"context": "web", "calls": ["identity.auth", "reporting.export"]},
+    "identity.auth":        {"context": "identity", "calls": [], "writes": ["users"]},
+    "ingestion.upload":     {"context": "ingestion", "calls": [], "writes": ["documents"]},
+    "pipeline.orchestrator": {"context": "pipeline",
+      "calls": ["analysis.extractor", "analysis.grounding", "analysis.rules", "analysis.quality", "analysis.test_writer"],
+      "writes": ["runs", "requirements", "findings", "test_cases"]},
+    "analysis.extractor":   {"context": "analysis", "calls": ["llm.client", "analysis.validation"]},
+    "analysis.grounding":   {"context": "analysis", "calls": []},
+    "analysis.rules":       {"context": "analysis", "calls": []},
+    "analysis.quality":     {"context": "analysis", "calls": ["llm.client", "analysis.validation"]},
+    "analysis.test_writer": {"context": "analysis", "calls": ["llm.client", "analysis.validation"]},
+    "analysis.validation":  {"context": "analysis", "calls": []},
+    "llm.client":           {"context": "llm", "calls": []},
+    "review.service":       {"context": "review", "calls": [], "writes": ["review_actions"]},
+    "reporting.export":     {"context": "reporting", "calls": []}
+  }
+}

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReqGuard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#F2F4F7; --sheet:#FCFDFE; --ink:#111C33; --muted:#526079; --line:#D6DDE7;
+  --accent:#3346D3; --accent-ink:#FFFFFF; --accent-soft:#E4E8FB;
+  --mark:#FFE27A; --issue:#C2410C; --ok:#1E7A4C; --ok-soft:#DDF3E7;
+  --high:#B42318; --med:#9A4A06; --low:#4B5770; --bad-soft:#FBE4E1;
+  --f-display:'Bricolage Grotesque','Segoe UI',Arial,sans-serif;
+  --f-body:'Atkinson Hyperlegible','Segoe UI',Arial,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#0C1424; --sheet:#131D31; --ink:#E7ECF5; --muted:#9DAAC1; --line:#26334C;
+  --accent:#8F9CFF; --accent-ink:#0C1424; --accent-soft:#1E2850;
+  --mark:#5E4C10; --issue:#FF9154; --ok:#5DD39C; --ok-soft:#123326;
+  --high:#FF8478; --med:#FFB75E; --low:#AEB9CC; --bad-soft:#3A1A1A; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--f-body)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--f-display);margin:0;letter-spacing:-.01em;line-height:1.15}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:18px;height:60px}
+.brand{display:flex;gap:9px;align-items:center;font:800 20px var(--f-display);color:var(--ink);text-decoration:none}
+nav{display:flex;gap:4px}
+nav a{padding:6px 12px;border-radius:8px;color:var(--muted);text-decoration:none}
+nav a.on,nav a:hover{background:var(--sheet);color:var(--ink)}
+.spacer{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--sheet)}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:999px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.pill{font:600 12px var(--f-mono);padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+main{padding:28px 0 80px}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:20px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--sheet);padding:8px 14px;border-radius:999px;cursor:pointer;font-weight:700;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ok{color:var(--ok)} .btn.bad{color:var(--high)}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:none;padding:7px 14px;border-radius:999px;cursor:pointer}
+.tabs button.on{background:var(--accent-soft);border-color:var(--accent);font-weight:700}
+textarea{width:100%;min-height:280px;resize:vertical;font:14px/1.7 var(--f-mono);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px}
+input[type=text]{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)} .small{font-size:13.5px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:960px){.grid2{grid-template-columns:1fr}}
+.side{position:sticky;top:80px;display:grid;gap:16px}
+@media (max-width:960px){.side{position:static}}
+.score{font:800 56px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.score small{font-size:20px;color:var(--muted)}
+.grade{display:inline-block;margin-top:6px;font-weight:700;font-size:13px;padding:2px 10px;border-radius:999px;border:1.5px solid currentColor}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{font:600 11.5px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
+.filters button{border:1px solid var(--line);background:var(--sheet);padding:4px 11px;border-radius:999px;cursor:pointer;font-size:13px}
+.filters button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.req{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.req-h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rid{font:600 12.5px var(--f-mono);color:var(--muted)}
+.kind{font:600 11px var(--f-mono);padding:1px 7px;border-radius:6px;background:var(--accent-soft)}
+.rtext{font-size:17px;margin-top:6px;overflow-wrap:anywhere}
+.mk{background:linear-gradient(to top,var(--mark) 0 45%,transparent 45%);text-decoration:underline wavy var(--issue);text-underline-offset:5px;text-decoration-thickness:1.5px}
+.revised{margin-top:8px;padding:8px 12px;border-radius:10px;background:var(--ok-soft);font-size:15px}
+.revised b{font:600 11.5px var(--f-mono);color:var(--ok);display:block}
+.finding{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px;display:grid;gap:6px}
+.fh{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px}
+.sev{font:600 11.5px var(--f-mono);padding:1px 8px;border-radius:6px;border:1.5px solid currentColor}
+.sev.high{color:var(--high)} .sev.medium{color:var(--med)} .sev.low{color:var(--low)}
+.src{font:600 11.5px var(--f-mono);padding:1px 8px;border-radius:6px;background:var(--ink);color:var(--paper)}
+.src.ai{background:transparent;color:var(--accent);border:1.5px dashed var(--accent)}
+.status{margin-left:auto;font:700 12px var(--f-body);padding:2px 10px;border-radius:999px}
+.status.open{color:var(--muted);border:1px solid var(--line)}
+.status.accept,.status.edit{background:var(--ok-soft);color:var(--ok)}
+.status.reject{background:var(--bad-soft);color:var(--high)}
+.sugg{font-size:14.5px;padding:8px 12px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0}
+.sugg b{font:600 11px var(--f-mono);color:var(--accent);display:block;text-transform:uppercase;letter-spacing:.05em}
+.decide{display:grid;gap:8px;margin-top:4px}
+.reason{font-size:13px;color:var(--muted)}
+.test{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:14.5px}
+.test .gwt b{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+.warn{border-left:3px solid var(--med);padding:8px 12px;background:var(--sheet);border-radius:0 8px 8px 0;font-size:14px;margin-bottom:8px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:10px;z-index:20;max-width:90vw}
+.modal{position:fixed;inset:0;background:rgba(10,15,30,.55);display:grid;place-items:center;z-index:15;padding:20px}
+.modal .card{width:min(860px,100%);max-height:85vh;display:flex;flex-direction:column;gap:12px}
+.modal pre{flex:1;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;font:13px/1.6 var(--f-mono);white-space:pre-wrap;margin:0}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.steps span{font:600 12px var(--f-mono);padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.steps span.on{border-color:var(--accent);color:var(--accent);animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:.5}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.steps span.on{animation:none}}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><div class="wrap bar">
+  <a class="brand" href="#/new"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="7" fill="currentColor"/><path d="M8 11h16M8 16h10M8 21h12" stroke="var(--paper)" stroke-width="2.2" stroke-linecap="round"/><circle cx="23.5" cy="16" r="3.4" fill="var(--issue)"/></svg>ReqGuard</a>
+  <nav><a href="#/new" id="nav-new">New review</a><a href="#/history" id="nav-history">History</a></nav>
+  <span class="spacer"></span>
+  <span class="pill" id="llm-pill" title="Model used by the agents">model: …</span>
+  <div class="seg" role="group" aria-label="Your role">
+    <button type="button" data-role="engineer">Engineer</button>
+    <button type="button" data-role="reviewer">Reviewer</button>
+  </div>
+</div></header>
+<main class="wrap" id="view"></main>
+
+<script>
+const SAMPLE = `# Student Room Booking — SRS (synthetic example)
+
+1. The system shall allow a student to log in with a university email address and password.
+2. Passwords shall be stored.
+3. The system shall let a student book a study room for up to 2 hours.
+4. The system shall add a booking.
+5. Booking confirmations should be sent quickly.
+6. The system shall log out a student after 20 minutes of inactivity.
+7. A student session shall last 1 hour.
+8. The system shall support the roles student, librarian, etc.
+9. The system shall be highly available.
+10. The system shall display free rooms within 2 seconds for 95% of requests.`;
+
+const AGENT = {functional:"Functional", non_functional:"Non-functional", security:"Security", consistency:"Consistency",
+  extractor:"Extractor", idea_to_srs:"Idea-to-SRS", judge:"Judge", test_writer:"Test-writer"};
+const state = {role: "engineer", run: null, filter: "all", open: {}};
+try { state.role = localStorage.getItem("rg-role") || "engineer"; } catch (e) {}
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(msg){ const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.append(t); setTimeout(() => t.remove(), 4200); }
+
+async function api(path, opts = {}){
+  const headers = Object.assign({"X-Role": state.role}, opts.headers || {});
+  if (opts.json !== undefined){ headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.json); }
+  const res = await fetch(path, {...opts, headers});
+  const type = res.headers.get("content-type") || "";
+  const data = type.includes("json") ? await res.json() : await res.text();
+  if (!res.ok) throw new Error((data && data.detail) ? (typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)) : `HTTP ${res.status}`);
+  return data;
+}
+
+function setRole(r){
+  state.role = r;
+  try { localStorage.setItem("rg-role", r); } catch (e) {}
+  document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("on", b.dataset.role === r));
+  route();
+}
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setRole(b.dataset.role)));
+
+/* ---------------- New review ---------------- */
+function viewNew(){
+  $("#nav-new").classList.add("on"); $("#nav-history").classList.remove("on");
+  const canRun = state.role === "engineer";
+  $("#view").innerHTML = `
+  <div class="grid2">
+    <section class="card">
+      <h1 style="font-size:30px">Review requirements</h1>
+      <p class="muted">Paste an SRS, upload a .txt or .md file, or start from a short idea. Eight agents review it; Python rules check first, AI specialists advise, and the reviewer decides.</p>
+      <div class="tabs" role="tablist">
+        <button type="button" data-tab="paste" class="on">Paste SRS</button>
+        <button type="button" data-tab="upload">Upload file</button>
+        <button type="button" data-tab="idea">Start from an idea</button>
+      </div>
+      <div id="tab-paste">
+        <label for="srs" class="small muted">One requirement per line works best.</label>
+        <textarea id="srs" spellcheck="false">${esc(SAMPLE)}</textarea>
+      </div>
+      <div id="tab-upload" hidden>
+        <input type="file" id="file" accept=".txt,.md">
+        <p class="small muted">.txt or .md, UTF-8, up to 200 KB.</p>
+      </div>
+      <div id="tab-idea" hidden>
+        <label for="idea" class="small muted">Describe your project in one or two sentences.</label>
+        <input type="text" id="idea" maxlength="2000" value="A mobile app for KSU students to book study rooms in the library">
+        <p class="small muted">The Idea-to-SRS agent drafts requirements first, then the team reviews the draft.</p>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn primary" id="run" ${canRun ? "" : "disabled"}>Run review</button>
+        <span class="small muted">${canRun ? "" : "Switch to Engineer to start a review."}</span>
+      </div>
+      <div class="steps" id="steps" hidden>
+        ${["idea_to_srs","extractor","functional","non_functional","security","consistency","judge"].map(a => `<span data-a="${a}">${AGENT[a]}</span>`).join("")}
+      </div>
+    </section>
+    <aside class="side">
+      <div class="card small">
+        <h3 style="font-size:18px;margin-bottom:8px">How a review runs</h3>
+        <ol style="margin:0;padding-left:18px;display:grid;gap:6px">
+          <li><b>Idea-to-SRS</b> drafts requirements (ideas only).</li>
+          <li><b>Extractor</b> splits the text; Python keeps only text found word for word.</li>
+          <li><b>Functional, Non-functional, Security, Consistency</b> run in parallel: rules first, then AI advice.</li>
+          <li><b>Judge</b> merges, ranks and scores.</li>
+          <li><b>You</b> accept, edit or reject each finding.</li>
+          <li><b>Test-writer</b> drafts Given–When–Then tests.</li>
+        </ol>
+      </div>
+    </aside>
+  </div>`;
+  let tab = "paste";
+  document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+    ["paste","upload","idea"].forEach(t => $("#tab-" + t).hidden = t !== tab);
+  }));
+  $("#run").addEventListener("click", async () => {
+    const btn = $("#run"); btn.disabled = true; btn.textContent = "Running…";
+    const steps = $("#steps"); steps.hidden = false;
+    const order = (tab === "idea" ? ["idea_to_srs"] : []).concat(["extractor","functional","non_functional","security","consistency","judge"]);
+    let i = 0; const tick = setInterval(() => { steps.querySelectorAll("span").forEach(s => s.classList.toggle("on", s.dataset.a === order[i % order.length])); i++; }, 500);
+    try {
+      let run;
+      if (tab === "upload"){
+        const f = $("#file").files[0];
+        if (!f) throw new Error("Choose a .txt or .md file first.");
+        const fd = new FormData(); fd.append("file", f);
+        run = await api("/api/runs/upload", {method:"POST", body: fd});
+      } else if (tab === "idea"){
+        run = await api("/api/runs", {method:"POST", json:{idea: $("#idea").value}});
+      } else {
+        run = await api("/api/runs", {method:"POST", json:{text: $("#srs").value}});
+      }
+      location.hash = "#/run/" + run.id;
+    } catch (e) { toast(e.message); }
+    finally { clearInterval(tick); btn.disabled = false; btn.textContent = "Run review"; steps.hidden = true; }
+  });
+}
+
+/* ---------------- History ---------------- */
+async function viewHistory(){
+  $("#nav-history").classList.add("on"); $("#nav-new").classList.remove("on");
+  $("#view").innerHTML = `<div class="empty">Loading…</div>`;
+  try {
+    const runs = await api("/api/runs");
+    $("#view").innerHTML = `<section class="card"><h1 style="font-size:28px;margin-bottom:12px">Past reviews</h1>` +
+      (runs.length ? `<table><thead><tr><th>Run</th><th>Created (UTC)</th><th>Source</th><th>Preview</th><th class="n">Reqs</th><th class="n">Findings</th><th class="n">Score</th></tr></thead><tbody>` +
+      runs.map(r => `<tr><td><a href="#/run/${r.id}">#${r.id}</a></td><td>${esc(r.created_at.replace("T"," ").slice(0,16))}</td><td>${r.source_type}</td><td class="muted">${esc(r.preview)}</td><td class="n">${r.requirements}</td><td class="n">${r.findings}</td><td class="n">${r.score}</td></tr>`).join("") +
+      `</tbody></table>` : `<p class="muted">No reviews yet. <a href="#/new">Start one</a>.</p>`) + `</section>`;
+  } catch (e) { $("#view").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+/* ---------------- Run ---------------- */
+function highlight(text, spans){
+  if (!spans.length) return esc(text);
+  const s = spans.slice().sort((a,b) => a[0]-b[0]); const merged = [];
+  for (const [a,b] of s){ const l = merged[merged.length-1]; if (l && a <= l[1]) l[1] = Math.max(l[1], b); else merged.push([a,b]); }
+  let out = "", pos = 0;
+  for (const [a,b] of merged){ out += esc(text.slice(pos,a)) + `<span class="mk">${esc(text.slice(a,b))}</span>`; pos = b; }
+  return out + esc(text.slice(pos));
+}
+
+function findingHTML(f, req){
+  const isReviewer = state.role === "reviewer";
+  const canRewrite = f.suggestion && f.agent !== "consistency" && f.req_id && req && req.final_text === req.text;
+  const src = f.source === "rule" ? `<span class="src">Rule ${esc(f.rule_id)}</span>` : `<span class="src ai">AI advisory</span>`;
+  const rel = f.related && f.related.length ? ` <span class="muted">· related ${f.related.map(esc).join(", ")}</span>` : "";
+  const editing = state.open[f.id];
+  let controls = "";
+  if (isReviewer){
+    if (editing === "edit") controls = `<div class="decide"><textarea id="t-${f.id}" style="min-height:80px">${esc(req && req.final_text !== req.text ? req.final_text : (f.suggestion || (req ? req.text : "")))}</textarea>
+      <div class="row"><button class="btn primary" data-act="edit-save" data-id="${f.id}">Save edit</button><button class="btn" data-act="cancel" data-id="${f.id}">Cancel</button></div></div>`;
+    else if (editing === "reject") controls = `<div class="decide"><input type="text" id="r-${f.id}" maxlength="500" placeholder="Why is this finding wrong? (10–500 characters)">
+      <div class="row"><button class="btn bad" data-act="reject-save" data-id="${f.id}">Reject finding</button><button class="btn" data-act="cancel" data-id="${f.id}">Cancel</button></div></div>`;
+    else if (f.status !== "open" && editing !== "change") controls = `<div class="row"><button class="btn" data-act="change" data-id="${f.id}">Change decision</button></div>`;
+    else controls = `<div class="row"><button class="btn ok" data-act="accept" data-id="${f.id}">${canRewrite ? "Accept rewrite" : "Accept"}</button>
+      <button class="btn" data-act="edit" data-id="${f.id}">Edit</button><button class="btn bad" data-act="reject" data-id="${f.id}">Reject</button></div>`;
+  }
+  return `<div class="finding">
+    <div class="fh"><span class="rid">${f.id}</span><span class="sev ${f.severity}">${f.severity}</span>${src}<span class="muted">${AGENT[f.agent]}</span>${rel}<span class="status ${f.status}">${{open:"Open",accept:"Accepted",edit:"Edited",reject:"Rejected"}[f.status]}</span></div>
+    <div>${esc(f.problem)}</div>
+    ${f.suggestion ? `<div class="sugg"><b>Suggestion</b>${esc(f.suggestion)}</div>` : ""}
+    ${f.reason ? `<div class="reason">Reason: ${esc(f.reason)}</div>` : ""}
+    ${controls}
+  </div>`;
+}
+
+function renderRun(){
+  const run = state.run; const isReviewer = state.role === "reviewer";
+  const F = run.findings;
+  const sevCount = s => F.filter(f => f.severity === s).length;
+  const filt = state.filter;
+  const keep = f => filt === "all" || (filt === "open" ? f.status === "open" : filt === "ai" ? f.source === "ai" : f.agent === filt || f.severity === filt);
+  const gradeColor = run.score >= 90 ? "var(--ok)" : run.score >= 70 ? "var(--med)" : "var(--high)";
+  const docF = F.filter(f => !f.req_id && keep(f));
+  const reqs = run.requirements.map(q => {
+    const own = F.filter(f => f.req_id === q.id);
+    const shown = own.filter(keep);
+    if (filt !== "all" && !shown.length) return "";
+    const spans = own.filter(f => f.span).map(f => f.span);
+    return `<article class="req" id="${q.id}">
+      <div class="req-h"><span class="rid">${q.id} · line ${q.line}</span><span class="kind">${q.kind.replace("_","-")}</span>
+      ${own.length ? `<span class="muted small">${own.length} finding${own.length>1?"s":""}${q.open_findings ? `, ${q.open_findings} open` : ""}</span>` : `<span class="small" style="color:var(--ok)">✓ No findings</span>`}</div>
+      <div class="rtext">${highlight(q.text, spans)}</div>
+      ${q.final_text !== q.text ? `<div class="revised"><b>REVISED BY REVIEWER</b>${esc(q.final_text)}</div>` : ""}
+      ${shown.map(f => findingHTML(f, q)).join("")}
+    </article>`;
+  }).join("");
+  const filters = [["all","All"],["open","Open"],["high","High"],["ai","AI advisory"],["functional","Functional"],["non_functional","Non-functional"],["security","Security"],["consistency","Consistency"]];
+  const tests = run.tests;
+  $("#view").innerHTML = `
+  <div class="grid2">
+    <section>
+      <div class="row" style="margin-bottom:6px"><h1 style="font-size:28px">Review #${run.id}</h1><span class="muted small">${run.source_type === "idea" ? "Drafted from an idea" : "Uploaded SRS"} · ${run.requirements.length} requirements</span></div>
+      ${run.errors.map(e => `<div class="warn">${esc(e)}</div>`).join("")}
+      <div class="filters">${filters.map(([k,l]) => `<button type="button" data-f="${k}" class="${filt===k?"on":""}">${l}</button>`).join("")}</div>
+      ${docF.length ? `<article class="req"><div class="req-h"><span class="rid">WHOLE DOCUMENT</span></div>${docF.map(f => findingHTML(f, null)).join("")}</article>` : ""}
+      ${reqs || `<div class="empty">No findings match this filter.</div>`}
+      <h2 style="font-size:22px;margin:28px 0 10px">Acceptance tests</h2>
+      ${isReviewer ? `<div class="row" style="margin-bottom:12px"><button class="btn primary" id="gen-tests">Generate tests for ready requirements</button><span class="small muted">A requirement is ready when all its findings are decided.</span></div>` : ""}
+      ${tests.length ? tests.map(t => `<div class="test">
+        <div class="fh"><span class="rid">${t.id} · ${t.req_id}</span><span class="status ${t.status}">${{open:"Open",accept:"Approved",edit:"Edited",reject:"Rejected"}[t.status]}</span></div>
+        <div class="gwt"><b>GIVEN</b> ${esc(t.given)}<br><b>WHEN</b> ${esc(t.when)}<br><b>THEN</b> ${esc(t.then)}</div>
+        ${t.reason ? `<div class="reason">Reason: ${esc(t.reason)}</div>` : ""}
+        ${isReviewer && t.status === "open" ? (state.open[t.id] === "reject"
+          ? `<div class="decide" style="margin-top:8px"><input type="text" id="r-${t.id}" maxlength="500" placeholder="Why is this test wrong? (10–500 characters)">
+             <div class="row"><button class="btn bad" data-tact="reject-save" data-id="${t.id}">Reject test</button><button class="btn" data-tact="cancel" data-id="${t.id}">Cancel</button></div></div>`
+          : `<div class="row" style="margin-top:8px"><button class="btn ok" data-tact="accept" data-id="${t.id}">Approve</button><button class="btn bad" data-tact="reject" data-id="${t.id}">Reject</button></div>`) : ""}
+      </div>`).join("") : `<p class="muted small">No tests yet.</p>`}
+    </section>
+    <aside class="side">
+      <div class="card">
+        <div class="score">${run.score}<small>/100</small></div>
+        <span class="grade" style="color:${gradeColor}">${esc(run.grade)}</span>
+        <p class="small" style="margin:12px 0 0">${esc(run.summary)}</p>
+        <p class="small muted" style="margin:8px 0 0"><b style="color:var(--high)">${sevCount("high")}</b> high · <b style="color:var(--med)">${sevCount("medium")}</b> medium · <b>${sevCount("low")}</b> low · <b>${run.open_findings}</b> open</p>
+        <p class="small muted" style="margin:4px 0 0">Rule findings: <b>${F.filter(f=>f.source==="rule").length}</b> (scored) · AI advisory: <b>${F.filter(f=>f.source==="ai").length}</b> (not scored)</p>
+        <div class="row" style="margin-top:14px"><button class="btn primary" id="export">Export report</button></div>
+      </div>
+      <div class="card small">
+        <h3 style="font-size:16px;margin-bottom:6px">Findings by specialist</h3>
+        <table><tbody>${["functional","non_functional","security","consistency"].map(a => `<tr><td>${AGENT[a]}</td><td class="n">${F.filter(f=>f.agent===a&&f.source==="rule").length} rule</td><td class="n">${F.filter(f=>f.agent===a&&f.source==="ai").length} AI</td></tr>`).join("")}</tbody></table>
+      </div>
+      <div class="card small">
+        <h3 style="font-size:16px;margin-bottom:6px">Agent usage</h3>
+        <table><thead><tr><th>Agent</th><th class="n">Calls</th><th class="n">In</th><th class="n">Out</th></tr></thead><tbody>
+        ${run.usage.map(u => `<tr><td>${AGENT[u.agent]||u.agent}</td><td class="n">${u.calls}</td><td class="n">${u.input_tokens}</td><td class="n">${u.output_tokens}</td></tr>`).join("")}
+        <tr><th>Total</th><td></td><td class="n"><b>${run.usage.reduce((a,u)=>a+u.input_tokens,0)}</b></td><td class="n"><b>${run.usage.reduce((a,u)=>a+u.output_tokens,0)}</b></td></tr></tbody></table>
+        ${(m => m.length ? `<p class="small muted" style="margin:8px 0 0">Model: <b>${esc(m.join(", "))}</b></p>` : "")([...new Set(run.usage.map(u => u.model).filter(Boolean))])}
+      </div>
+      ${run.dropped.length ? `<div class="card small"><h3 style="font-size:16px;margin-bottom:6px">Dropped by grounding check</h3>${run.dropped.map(d => `<p style="margin:4px 0">“${esc(d.text)}” <span class="muted">(${esc(d.reason)})</span></p>`).join("")}</div>` : ""}
+      ${run.source_type === "idea" ? `<details class="card small"><summary><b>Draft SRS from the idea</b></summary><pre style="white-space:pre-wrap;font:12.5px/1.6 var(--f-mono)">${esc(run.source_text)}</pre></details>` : ""}
+    </aside>
+  </div>`;
+
+  document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => { state.filter = b.dataset.f; renderRun(); }));
+  document.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", () => act(b.dataset.act, b.dataset.id)));
+  document.querySelectorAll("[data-tact]").forEach(b => b.addEventListener("click", () => actTest(b.dataset.tact, b.dataset.id)));
+  const gen = $("#gen-tests");
+  if (gen) gen.addEventListener("click", async () => {
+    gen.disabled = true; gen.textContent = "Writing tests…";
+    try { state.run = await api(`/api/runs/${run.id}/tests`, {method:"POST"}); renderRun(); toast("Tests drafted. Approve or reject each one."); }
+    catch (e) { toast(e.message); gen.disabled = false; gen.textContent = "Generate tests for ready requirements"; }
+  });
+  $("#export").addEventListener("click", exportReport);
+}
+
+async function decide(id, body){
+  try { state.run = await api(`/api/runs/${state.run.id}/findings/${id}/decision`, {method:"POST", json: body}); delete state.open[id]; renderRun(); }
+  catch (e) { toast(e.message); }
+}
+function act(a, id){
+  if (a === "accept") return decide(id, {decision:"accept"});
+  if (a === "edit" || a === "reject"){ state.open[id] = a; renderRun(); const el = $(a === "edit" ? `#t-${id}` : `#r-${id}`); if (el) el.focus(); return; }
+  if (a === "cancel"){ delete state.open[id]; return renderRun(); }
+  if (a === "change"){ state.open[id] = "change"; return renderRun(); }
+  if (a === "edit-save") return decide(id, {decision:"edit", new_text: $(`#t-${id}`).value});
+  if (a === "reject-save") return decide(id, {decision:"reject", reason: $(`#r-${id}`).value});
+}
+async function actTest(a, id){
+  if (a === "reject"){ state.open[id] = "reject"; renderRun(); const el = $(`#r-${id}`); if (el) el.focus(); return; }
+  if (a === "cancel"){ delete state.open[id]; return renderRun(); }
+  const body = a === "accept" ? {decision:"accept"} : {decision:"reject", reason: $(`#r-${id}`).value};
+  try { state.run = await api(`/api/runs/${state.run.id}/tests/${id}/decision`, {method:"POST", json: body}); delete state.open[id]; renderRun(); }
+  catch (e) { toast(e.message); }
+}
+async function exportReport(){
+  try {
+    const md = await api(`/api/runs/${state.run.id}/report.md`);
+    const blob = URL.createObjectURL(new Blob([md], {type:"text/markdown"}));
+    const m = document.createElement("div"); m.className = "modal";
+    m.innerHTML = `<div class="card"><div class="row"><h2 style="font-size:20px">Report</h2><span class="spacer"></span>
+      <a class="btn primary" href="${blob}" download="reqguard-run-${state.run.id}.md">Download .md</a><button class="btn" id="close">Close</button></div><pre>${esc(md)}</pre></div>`;
+    document.body.append(m);
+    m.addEventListener("click", e => { if (e.target === m || e.target.id === "close") m.remove(); });
+  } catch (e) { toast(e.message); }
+}
+
+async function viewRun(id){
+  document.querySelectorAll("nav a").forEach(a => a.classList.remove("on"));
+  if (!state.run || state.run.id !== id){ state.filter = "all"; state.open = {}; $("#view").innerHTML = `<div class="empty">Loading review…</div>`; }
+  try { state.run = await api(`/api/runs/${id}`); renderRun(); }
+  catch (e) { $("#view").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+
+function route(){
+  const h = location.hash || "#/new";
+  const m = h.match(/^#\/run\/(\d+)/);
+  if (m) return viewRun(Number(m[1]));
+  if (h.startsWith("#/history")) return viewHistory();
+  return viewNew();
+}
+window.addEventListener("hashchange", route);
+fetch("/api/health").then(r => r.json()).then(d => { $("#llm-pill").textContent = "model: " + d.llm; }).catch(() => {});
+setRole(state.role);
+</script>
+</body>
+</html>

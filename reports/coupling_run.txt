@@ -1,0 +1,20 @@
+# run: 2026-10-21T10:08Z  python 3.13.16
+== Option A - modular monolith (chosen): PASS
+== Option B - distributed workers (rejected): FAIL (7 violations)
+   - C2 forbidden write: analysis.extractor (analysis) writes table 'requirements'
+   - C2 forbidden write: analysis.rules (analysis) writes table 'findings'
+   - C2 forbidden write: analysis.quality (analysis) writes table 'findings'
+   - C2 forbidden write: analysis.test_writer (analysis) writes table 'test_cases'
+   - C3 shared write: table 'findings' written by ['analysis.quality', 'analysis.rules', 'review.service']
+   - C3 shared write: table 'runs' written by ['api.routes', 'worker.jobs']
+   - C3 shared write: table 'test_cases' written by ['analysis.test_writer', 'review.service']
+== DevAI architecture draft (as proposed, unedited): FAIL (8 violations)
+   - C1 cycle: api.gateway -> ingestion.service -> queue.redis -> api.gateway
+   - C2 forbidden edge: ingestion.service (ingestion) -> queue.redis (pipeline)
+   - C2 forbidden write: analysis.flagging (analysis) writes table 'flag_findings'
+   - C2 forbidden write: analysis.acceptance_test (analysis) writes table 'acceptance_tests'
+   - C2 forbidden write: reporting.exporter (reporting) writes table 'requirements'
+   - C3 shared write: table 'acceptance_tests' written by ['analysis.acceptance_test', 'review.decision_service']
+   - C3 shared write: table 'flag_findings' written by ['analysis.flagging', 'review.decision_service']
+   - C3 shared write: table 'requirements' written by ['pipeline.orchestrator', 'reporting.exporter', 'review.decision_service']
+exit=1

@@ -1,0 +1,18 @@
+# secrets
+.env
+*.key
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+# local data
+*.sqlite
+*.db
+uploads/
+# editors
+.vscode/
+.idea/
+reqguard.db

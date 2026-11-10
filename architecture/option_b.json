@@ -1,0 +1,19 @@
+{
+  "name": "Option B - distributed workers (rejected)",
+  "modules": {
+    "ui.app":               {"context": "web", "calls": ["api.routes"]},
+    "api.routes":           {"context": "web", "calls": ["identity.auth", "ingestion.upload", "queue.enqueue", "review.service", "reporting.export"], "writes": ["runs"]},
+    "identity.auth":        {"context": "identity", "calls": [], "writes": ["users"]},
+    "ingestion.upload":     {"context": "ingestion", "calls": [], "writes": ["documents"]},
+    "queue.enqueue":        {"context": "pipeline", "calls": []},
+    "worker.jobs":          {"context": "pipeline", "calls": ["analysis.extractor", "analysis.grounding", "analysis.rules", "analysis.quality", "analysis.test_writer", "queue.enqueue"], "writes": ["runs"]},
+    "analysis.extractor":   {"context": "analysis", "calls": ["llm.client"], "writes": ["requirements"]},
+    "analysis.grounding":   {"context": "analysis", "calls": []},
+    "analysis.rules":       {"context": "analysis", "calls": [], "writes": ["findings"]},
+    "analysis.quality":     {"context": "analysis", "calls": ["llm.client"], "writes": ["findings"]},
+    "analysis.test_writer": {"context": "analysis", "calls": ["llm.client"], "writes": ["test_cases"]},
+    "llm.client":           {"context": "llm", "calls": []},
+    "review.service":       {"context": "review", "calls": [], "writes": ["review_actions", "findings", "test_cases"]},
+    "reporting.export":     {"context": "reporting", "calls": []}
+  }
+}

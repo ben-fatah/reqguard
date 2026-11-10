@@ -1,0 +1,20 @@
+{
+  "name": "DevAI architecture draft (as proposed, unedited)",
+  "_source": "docs/ai_drafts/devai_architecture_draft.md - section 5 diagram edges and section 2/4 text",
+  "modules": {
+    "ui.react_spa":          {"context": "web", "calls": ["api.gateway"]},
+    "api.gateway":           {"context": "web", "calls": ["identity.auth_rbac", "ingestion.service", "review.decision_service", "reporting.exporter"]},
+    "identity.auth_rbac":    {"context": "identity", "calls": [], "writes": ["users"]},
+    "ingestion.service":     {"context": "ingestion", "calls": ["queue.redis"], "writes": ["submissions", "object_store"]},
+    "queue.redis":           {"context": "pipeline", "calls": ["pipeline.orchestrator", "api.gateway"]},
+    "pipeline.orchestrator": {"context": "pipeline", "calls": ["analysis.extractor", "analysis.flagging", "analysis.rewrite", "analysis.acceptance_test"], "writes": ["requirements"]},
+    "analysis.extractor":    {"context": "analysis", "calls": []},
+    "analysis.flagging":     {"context": "analysis", "calls": ["llm.litellm"], "writes": ["flag_findings"]},
+    "analysis.rewrite":      {"context": "analysis", "calls": ["llm.litellm"]},
+    "analysis.acceptance_test": {"context": "analysis", "calls": ["llm.litellm"], "writes": ["acceptance_tests"]},
+    "llm.litellm":           {"context": "llm", "calls": []},
+    "review.decision_service": {"context": "review", "calls": ["review.audit_service"], "writes": ["requirements", "flag_findings", "rewrites", "acceptance_tests"]},
+    "review.audit_service":  {"context": "review", "calls": [], "writes": ["audit_log", "review_decisions"]},
+    "reporting.exporter":    {"context": "reporting", "calls": [], "writes": ["requirements"]}
+  }
+}

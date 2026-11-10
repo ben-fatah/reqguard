@@ -1,0 +1,28 @@
+# run: 2026-10-21T06:36Z
+Basis: ESTIMATED (assumptions above)
+
+Option A (batched) - per run of 40 requirements
+   Extractor    calls=  1  in=  2600  out=  1800
+   Quality      calls=  1  in=  2700  out=  1440
+   Test-writer  calls=  1  in=  2200  out=  2800
+   TOTAL incl. 10% retries: in=8250 out=6644 tokens=14894  cost(peak)=$0.0104 (0.0392 SAR)
+
+Option B (fan-out) - per run of 40 requirements
+   Extractor    calls=  1  in=  2600  out=  1800
+   Quality      calls= 40  in= 30000  out=  2400
+   Test-writer  calls= 40  in= 25600  out=  2800
+   TOTAL incl. 10% retries: in=64020 out=7700 tokens=71720  cost(peak)=$0.0284 (0.1067 SAR)
+
+Sensitivity (per run, USD at Flash prices unless noted)
+   Scenario                      A tokens     A cost  B tokens     B cost    B/A
+   Base: peak, 10% retries          14894     0.0104     71720     0.0284   2.72
+   Off-peak hours                   14894     0.0052     71720     0.0142   2.72
+   B with prompt-cache hits         14894     0.0104     71720     0.0120   1.15
+   Retries 30%                      17602     0.0123     84760     0.0336   2.72
+   Document x2 (80 reqs)            27258     0.0201    142340     0.0566   2.81
+   Switch to V4-Pro (peak)          14894     0.0372     71720     0.1150   3.09
+
+Monthly / project totals at base (peak) rates
+   Project lifetime (dev + M3 evaluation) - 1,000 runs  A=$10.4478 (39.1793 SAR)  B=$28.4460 (106.6725 SAR)
+   Pilot: 10 engineers x 3 SRS x 3 runs / month         A=$0.9403 (3.5261 SAR)  B=$2.5601 (9.6005 SAR)
+   Stress: 100 engineers x 3 SRS x 3 runs / month       A=$9.4030 (35.2613 SAR)  B=$25.6014 (96.0053 SAR)

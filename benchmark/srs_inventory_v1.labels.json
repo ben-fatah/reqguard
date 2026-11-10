@@ -1,0 +1,292 @@
+{
+ "document": "srs_inventory_v1.md",
+ "synthetic": true,
+ "requirements": [
+  {
+   "id": "REQ-01",
+   "line": 7,
+   "text": "The system shall allow an administrator to create a user account with a name, an email address and a role.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-02",
+   "line": 8,
+   "text": "The system shall lock a user account after 5 consecutive failed login attempts within 15 minutes.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-03",
+   "line": 9,
+   "text": "Users should be able to reset their password.",
+   "expected_rules": [
+    "R2"
+   ]
+  },
+  {
+   "id": "REQ-04",
+   "line": 10,
+   "text": "The system shall send a password-reset link that expires 30 minutes after it is issued.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-05",
+   "line": 11,
+   "text": "Passwords shall be stored securely.",
+   "expected_rules": [
+    "R1",
+    "R6"
+   ]
+  },
+  {
+   "id": "REQ-06",
+   "line": 12,
+   "text": "The login page shall be user-friendly.",
+   "expected_rules": [
+    "R1"
+   ]
+  },
+  {
+   "id": "REQ-07",
+   "line": 13,
+   "text": "The system shall support the roles Administrator, Store Manager, Clerk, etc.",
+   "expected_rules": [
+    "R3"
+   ]
+  },
+  {
+   "id": "REQ-08",
+   "line": 14,
+   "text": "The system shall log out a user after 20 minutes of inactivity.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-09",
+   "line": 18,
+   "text": "The system shall allow a Store Manager to add a product with a SKU, a name, a unit price and a reorder level.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-10",
+   "line": 19,
+   "text": "The system shall reject a product whose SKU already exists and show the message \"SKU already in use\".",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-11",
+   "line": 20,
+   "text": "Product images may be uploaded by the user.",
+   "expected_rules": [
+    "R2"
+   ]
+  },
+  {
+   "id": "REQ-12",
+   "line": 21,
+   "text": "The system shall display the product list sorted by name, 25 products per page.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-13",
+   "line": 22,
+   "text": "Search shall be fast.",
+   "expected_rules": [
+    "R1"
+   ]
+  },
+  {
+   "id": "REQ-14",
+   "line": 23,
+   "text": "The system shall allow a Clerk to search products by SKU or by name.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-15",
+   "line": 24,
+   "text": "Product prices shall be validated.",
+   "expected_rules": [
+    "R6"
+   ]
+  },
+  {
+   "id": "REQ-16",
+   "line": 25,
+   "text": "The system shall store unit prices with two decimal places.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-17",
+   "line": 29,
+   "text": "The system shall record each stock movement with the product SKU, quantity, movement type, user and timestamp.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-18",
+   "line": 30,
+   "text": "The system shall reject a stock-out movement that would make the stock level negative.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-19",
+   "line": 31,
+   "text": "The system shall update the stock level and shall notify the Store Manager by email when the level falls below the reorder level.",
+   "expected_rules": [
+    "R4"
+   ]
+  },
+  {
+   "id": "REQ-20",
+   "line": 32,
+   "text": "Stock levels should be accurate.",
+   "expected_rules": [
+    "R1",
+    "R2"
+   ]
+  },
+  {
+   "id": "REQ-21",
+   "line": 33,
+   "text": "The system shall allow a Store Manager to reverse a stock movement within 24 hours of recording it.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-22",
+   "line": 34,
+   "text": "Reversed movements shall be kept and marked as reversed.",
+   "expected_rules": [
+    "R6"
+   ]
+  },
+  {
+   "id": "REQ-23",
+   "line": 35,
+   "text": "The system shall handle bulk imports of movements, TBD.",
+   "expected_rules": [
+    "R3"
+   ]
+  },
+  {
+   "id": "REQ-24",
+   "line": 36,
+   "text": "The system shall respond within an acceptable time when recording a movement.",
+   "expected_rules": [
+    "R1",
+    "R5"
+   ]
+  },
+  {
+   "id": "REQ-25",
+   "line": 40,
+   "text": "The system shall generate a daily stock report at 23:00 Riyadh time.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-26",
+   "line": 41,
+   "text": "The system shall export reports as CSV files.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-27",
+   "line": 42,
+   "text": "Reports should load quickly.",
+   "expected_rules": [
+    "R1",
+    "R2",
+    "R5"
+   ]
+  },
+  {
+   "id": "REQ-28",
+   "line": 43,
+   "text": "The system shall allow a Store Manager to filter the movement report by date range and by product.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-29",
+   "line": 44,
+   "text": "The system shall show the total stock value as the sum of quantity multiplied by unit price.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-30",
+   "line": 45,
+   "text": "Charts and/or tables shall be shown on the dashboard.",
+   "expected_rules": [
+    "R3",
+    "R6"
+   ]
+  },
+  {
+   "id": "REQ-31",
+   "line": 46,
+   "text": "The dashboard shall be intuitive.",
+   "expected_rules": [
+    "R1"
+   ]
+  },
+  {
+   "id": "REQ-32",
+   "line": 47,
+   "text": "The system shall keep movement records for at least 3 years.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-33",
+   "line": 51,
+   "text": "The system shall return search results within 2 seconds for 95% of requests with 100 concurrent users.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-34",
+   "line": 52,
+   "text": "The system shall be highly available.",
+   "expected_rules": [
+    "R1",
+    "R5"
+   ]
+  },
+  {
+   "id": "REQ-35",
+   "line": 53,
+   "text": "The system shall be available 99.5% of the time each calendar month, excluding announced maintenance.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-36",
+   "line": 54,
+   "text": "All user input shall be validated.",
+   "expected_rules": [
+    "R6"
+   ]
+  },
+  {
+   "id": "REQ-37",
+   "line": 55,
+   "text": "The system shall reject any request without a valid session token with HTTP status 401.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-38",
+   "line": 56,
+   "text": "The system shall be easy to maintain.",
+   "expected_rules": [
+    "R1"
+   ]
+  },
+  {
+   "id": "REQ-39",
+   "line": 57,
+   "text": "The system shall write an audit log entry for every change to a product or stock level, including the user and the time.",
+   "expected_rules": []
+  },
+  {
+   "id": "REQ-40",
+   "line": 58,
+   "text": "The system shall support many concurrent users.",
+   "expected_rules": [
+    "R1",
+    "R5"
+   ]
+  }
+ ]
+}
