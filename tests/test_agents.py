@@ -115,6 +115,30 @@ def test_score_and_grade():
     assert (grade(90), grade(89), grade(70), grade(69)) == ("Ready for review", "Needs work", "Needs work", "High risk")
 
 
+def _high_rules(n: int) -> list[Finding]:
+    return [Finding("REQ-01", "security", "rule", "high", f"p{i}", rule_id=f"X{i}") for i in range(n)]
+
+
+@pytest.mark.parametrize("n_high, value, expected", [
+    (0, 95, "Ready for review"),   # no gate: score thresholds only
+    (0, 75, "Needs work"),
+    (1, 95, "Needs work"),         # 1-4 high rule findings cap the grade at "Needs work"
+    (4, 95, "Needs work"),
+    (1, 60, "High risk"),          # the cap never raises a low score
+    (5, 95, "High risk"),          # 5 or more always mean "High risk"
+    (5, 100, "High risk"),
+])
+def test_grade_gate_on_high_rule_findings(n_high, value, expected):
+    """ADR-005 grade gate; boundaries 0, 1, 4 and 5 high-severity rule findings."""
+    assert grade(value, _high_rules(n_high)) == expected
+
+
+def test_grade_gate_ignores_ai_and_lower_severity_findings():
+    ai_high = [Finding("REQ-01", "functional", "ai", "high", f"ai{i}") for i in range(10)]
+    rule_medium = [Finding("REQ-01", "functional", "rule", "medium", f"m{i}", rule_id=f"M{i}") for i in range(10)]
+    assert grade(95, ai_high + rule_medium) == "Ready for review"
+
+
 def test_score_never_negative():
     fs = [Finding("REQ-01", "security", "rule", "high", str(i), rule_id=f"X{i}") for i in range(10)]
     assert score(fs, REQS[:1]) == 0

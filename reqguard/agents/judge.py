@@ -74,8 +74,21 @@ def score(findings: list[Finding], requirements: list[Requirement]) -> int:
     return max(0, round(sum(per_req.values()) / len(per_req)) - doc_penalty)
 
 
-def grade(value: int) -> str:
-    if value >= 90:
+HIGH_RISK_HIGH_RULES = 5   # this many high-severity rule findings always means "High risk"
+
+
+def grade(value: int, findings: list[Finding] | None = None) -> str:
+    """Grade from the score thresholds, gated by high-severity rule findings (ADR-005).
+
+    0 high rule findings  -> score thresholds only
+    1-4                   -> at most "Needs work"
+    5 or more             -> "High risk"
+    AI advisory findings never affect the grade, like the score.
+    """
+    high_rules = sum(1 for f in findings or [] if f.source == "rule" and f.severity == "high")
+    if high_rules >= HIGH_RISK_HIGH_RULES:
+        return "High risk"
+    if value >= 90 and high_rules == 0:
         return "Ready for review"
     if value >= 70:
         return "Needs work"
@@ -109,4 +122,4 @@ class JudgeAgent(Agent):
             summary = str(self.call(json.dumps(payload))["summary"]).strip()
         except AgentError as exc:
             summary, error = fallback_summary(findings, requirements), str(exc)
-        return findings, value, grade(value), summary, error
+        return findings, value, grade(value, findings), summary, error

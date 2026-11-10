@@ -26,7 +26,7 @@ Command line, without the web app:
 python -m reqguard review benchmark/srs_inventory_v1.md
 python -m reqguard idea "A mobile app for students to book study rooms"
 python -m reqguard.bench          # rule precision / recall on the labelled benchmark
-python -m pytest -q               # 104 tests
+python -m pytest -q               # 112 tests
 ```
 
 ## Run with DevAI
@@ -103,7 +103,7 @@ SRS ──────────────────┴─> Extractor ─>
 | Non-functional | Measurable quality targets | Rules R1, R5 |
 | Security | Passwords, sessions, personal data, authentication | Rules S1, S2, S3, S4 (document-level) |
 | Consistency | Conflicts and duplicates between requirements | Rules C1, C2 |
-| Judge | Summary for the reviewer | Merge, de-duplicate, rank and score are plain Python. The score counts rule findings only (ADR-005); AI advisory findings are shown and counted separately |
+| Judge | Summary for the reviewer | Merge, de-duplicate, rank and score are plain Python. The score counts rule findings only (ADR-005); AI advisory findings are shown and counted separately. Grade gate: any high-severity rule finding caps the grade at "Needs work", 5 or more give "High risk" |
 | Test-writer | Given–When–Then acceptance tests | Every test must have given/when/then and a real requirement ID |
 
 Every agent is the same model with its own instructions (`reqguard/prompts/*.md`), a JSON output that is validated, and one retry. Agents never touch the database: only `store.py` writes it. If an AI call fails, the rule findings are kept and the run shows a warning.
@@ -141,7 +141,7 @@ reqguard/
   report.py     Markdown export
   bench.py      precision/recall on the labelled benchmark
   web/          single-page interface
-tests/          104 pytest tests
+tests/          112 pytest tests
 benchmark/      synthetic SRS with planted defects + labels
 docs/           M1 documents (charter, requirements, ADRs, risks, cost model)
 ```

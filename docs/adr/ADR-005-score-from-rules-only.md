@@ -26,6 +26,10 @@ Chose **Option 2**. Rule findings are deterministic (ADR-002), so the score is i
 - **Accepted downside:** the score ignores problems that only the AI found, such as a contradiction between two requirements or a missing security requirement that no word list catches. A document can score well and still have serious AI advisory findings. Mitigation: the AI advisory count is shown next to the score in the UI, the report and the CLI, every AI finding still needs a reviewer decision before export (FR-11), and the Judge's summary names the most important problems, whatever their source.
 - **Rejected:** Option 1, because the score would vary between identical runs (31 vs 25 in our measurement), and the score could change because of a model change in DevAI that ReqGuard cannot control.
 
+## Grade gate on high-severity rule findings
+
+With rule-only scoring, the benchmark SRS scored 89, "Needs work", one point below "Ready for review", even though it has five high-severity rule findings such as passwords stored with no hashing. The score is an average over all requirements, so a few severe defects are diluted by many clean requirements. We kept the weights and the score unchanged and added a gate to the grade only. Any high-severity rule finding caps the grade at "Needs work", and five or more always give "High risk". Otherwise the score thresholds (90 / 70) apply as before. The gate counts rule findings only, so the grade stays as repeatable as the score. The benchmark is now graded "High risk" with score 89. The tests cover the boundaries at 0, 1, 4 and 5 high findings.
+
 ## Y-statement
 
 In the context of the Judge's quality score, facing AI findings that vary between identical runs and a model that DevAI sets globally, we decided to compute the score from deterministic rule findings only and show AI advisory findings as a separate count, to achieve a repeatable score that matches NFR-03, accepting that the score ignores problems only the AI found.
