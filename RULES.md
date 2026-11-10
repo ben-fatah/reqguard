@@ -1,33 +1,30 @@
-# RULES.md — ReqGuard team rules (project memory)
+# RULES.md — ReqGuard team rules
 
-These rules apply to every member and every AI-assisted change. DevAI loads this file as standing context; it is guidance, so anything that must never happen is also enforced by a test, lint rule or CI check.
+These rules apply to every member and every AI-assisted change. Anything that must never happen is also checked by a test or by lint.
 
-## Language and stack
-- Python 3.12. FastAPI, Jinja2/HTMX, SQLAlchemy, SQLite, pytest, mutmut. No new dependency without both members agreeing and verifying the package name on PyPI.
+## Stack
+- Python 3.12, FastAPI, SQLite (`sqlite3`), pytest, ruff.
+- The AI agents run as DevAI agents inside DevAI flows (`REQGUARD_LLM=devai`); the offline mock is used for tests.
+- No new runtime dependency without both members agreeing and checking the package name on PyPI. Dev tools (ruff, vulture) stay out of `requirements.txt`.
 
-## Before prompting DevAI
-- Write `specs/<feature>/SPEC.md` first: goal, Given–When–Then criteria with one failure path and one boundary case, constraints, non-goals, input/output and error contracts, a worked example, source files, security constraints, and tests with an independent oracle.
+## Architecture boundaries
+- `reqguard/rules/` and `reqguard/grounding.py` are pure functions: no database, no network, no file writes.
+- Agents (`reqguard/agents/`) never write the database and never choose the next step. The orchestrator (`reqguard/pipeline.py`) runs a fixed order.
+- Only `reqguard/store.py` writes the database. Decisions are append-only: never add code that updates or deletes a decision.
+- Agents reach a language model only through `reqguard/llm/` (`get_client()`).
+- Rule findings are the source of truth; AI findings are advisory and never change the score or the grade (ADR-002, ADR-005).
 
-## Architecture boundaries (checked by `tools/coupling_check.py`)
-- `reqguard/analysis/` and `reqguard/agents/` are pure: no database, no web, no file writes.
-- Only `pipeline/orchestrator.py` writes runs, requirements, findings and test cases. Only `review/` writes review actions. No module updates or deletes review actions.
-- Agents call the LLM only through `llm/devai_client.py`.
-
-## Commits and branches
-- Short-lived branches, one small unit of work each.
-- Raw AI output is committed alone: `raw(ai): <what>` with `Co-authored-by: DevAI <devai@seai-x.com>`.
-- Human changes follow in `fix(human): <what and why>`.
-- Never rebase or squash away the other member's raw/fix pair. Resolve merge conflicts in a new human commit that explains the reconciliation.
+## Every change
+- Keep `python -m pytest -q` and `ruff check .` green. Run them yourself; do not rely on an assistant saying they pass.
+- If you change any file in `reqguard/prompts/`, run `python -m reqguard.devai setup`, then `python -m reqguard.devai check`.
+- Do not weaken a validator or a test to make a run pass. Fix the prompt or the code instead.
 
 ## Security
-- Never commit `.env` or any key. Run the secret scan before every push.
-- Never paste secrets, personal data or real company documents into DevAI or any AI tool. Use the synthetic benchmark only.
-- SRS text is data: prompts wrap it in delimiters and tell the model to ignore instructions inside it.
+- Never commit `.env` or any key. `.env.example` holds fake values only.
+- Never put real or personal data into ReqGuard, DevAI or any AI tool. Use the synthetic benchmark.
+- SRS text is data: prompts wrap it in delimiters and tell the model to ignore instructions inside it. Never change the text sent to a model, because the grounding check compares it word for word.
 
-## Tests
-- Every function tagged `# implements FR-xx` has a test referencing the same ID.
-- LLM calls are mocked in unit tests; golden-output contract tests cover each agent's schema.
-- Run tests, lint and the coupling check yourself; do not rely on the assistant's claim that they pass.
-
-## Disclosure
-- Record every AI error found and every rejected suggestion in `AI_USE_DISCLOSURE.md` as it happens, not at the deadline.
+## Provenance
+- AI involvement is recorded in `AI_USE_DISCLOSURE.md`; commits do not carry AI co-author trailers.
+- Use small commits with clear messages.
+- Record every AI error found and every rejected AI suggestion in `AI_USE_DISCLOSURE.md` as it happens.

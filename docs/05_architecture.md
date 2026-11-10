@@ -6,6 +6,75 @@ Process followed (Week 7): generate two deliberately different options → evalu
 
 ---
 
+## Current architecture (v0.2, DevAI)
+
+Sections 1–5 below are the M1 design record and are kept unchanged as history. This section describes what is built today. The file-by-file guide and the algorithms are in [ARCHITECTURE.md](ARCHITECTURE.md).
+
+**What changed since M1.**
+- The three planned agents (Extractor, Quality, Test-writer) became **eight**. Quality was split into four specialists, each with its own rule pack, and an Idea-to-SRS and a Judge agent were added.
+- Every language-model call now runs through **DevAI flows on the user's machine**.
+- The UI is a single page served by FastAPI (not Jinja2/HTMX), and persistence is plain `sqlite3` in `store.py` (not SQLAlchemy).
+- The score counts rule findings only, and the grade has a gate on high-severity rule findings (ADR-005).
+
+### The eight agents
+
+| # | Agent | Job | Input → output (validated JSON) | Deterministic guard (Python) | DevAI agent / flow |
+|---|---|---|---|---|---|
+| 1 | Idea-to-SRS | Draft an SRS from a short idea | `{idea}` → `{title, requirements[{text}]}` | Must be a non-empty list of texts; the draft then goes through the normal review | `reqguard-idea_to_srs` |
+| 2 | Extractor | Split the document into requirements | `<document>` → `{requirements[{text, line}]}` | Verbatim grounding check with fresh IDs (ADR-004) | `reqguard-extractor` |
+| 3 | Functional | Actor, trigger, failure path, wording | requirements + rule findings → `{findings[…]}` | Rules R2, R3, R4, R6, F1 run first | `reqguard-functional` |
+| 4 | Non-functional | Measurable quality targets | same | Rules R1, R5 | `reqguard-non_functional` |
+| 5 | Security | Passwords, sessions, personal data, authentication | same | Rules S1–S3, S4 (document level) | `reqguard-security` |
+| 6 | Consistency | Conflicts and duplicates between requirements | same | Rules C1, C2 | `reqguard-consistency` |
+| 7 | Judge | 2–4 sentence summary for the reviewer | ranked findings + score → `{summary}` | Merge, dedupe, rank, rule-only score and grade gate are plain Python; plain summary if the AI fails | `reqguard-judge` |
+| 8 | Test-writer | Given–When–Then acceptance tests | approved requirement texts → `{tests[{req_id, given, when, then}]}` | Each test needs all four fields and a real requirement ID | `reqguard-test_writer` |
+
+The specialists (3–6) run in parallel. Every agent gets one retry with its validation errors. No agent writes to the database or chooses the next step; the orchestrator's order is fixed.
+
+### DevAI flow integration
+
+- **Deployment.** `python -m reqguard.devai setup` creates, for each agent, a DevAI agent `reqguard-<name>` and a flow `reqguard-<name>`. The agent's instructions are `prompts/<name>.md` + `prompts/_shared.md` + "Do not use any tools. Answer only from the message." The flow is webhook trigger → agent node (prompt `{{trigger.payload.message}}`) → output, with working directory `~/.devai/playground/reqguard-sandbox` (an empty folder). `check` verifies both exist and still match the prompt files.
+- **One call.** `POST :7583/webhook/reqguard-<name>` with `{"message": …}`, then poll `GET :7583/api/flows/reqguard-<name>/runs/<runId>` every second. The reply is the agent step's `output`. There is a 180 s timeout (the run is then cancelled) and one retry for a failed run.
+- **Least privilege.** DevAI cannot run an agent with no tools, so each agent gets the smallest set it allows (read, list, to-do). The sandbox folder is empty, and DevAI rejects paths outside it (risk RK-12).
+- **Model traceability.** The model is a global DevAI setting. ReqGuard reads `modelId` from `GET :7588/` once per run and stores it in the run usage (risk RK-13).
+
+### C4 Level 2 — Containers (v0.2)
+
+```mermaid
+C4Container
+    title ReqGuard v0.2 — Containers (DevAI flows)
+    Person(eng, "Engineer", "Uploads an SRS or an idea, exports the report")
+    Person(rev, "Reviewer", "Decides every finding and test")
+    Container_Boundary(app, "ReqGuard — one Python process") {
+        Container(ui, "Web UI", "Single HTML page (web/index.html)", "Engineer and reviewer views; sends X-Role")
+        Container(api, "API", "Python 3.12, FastAPI (api.py)", "10 endpoints, role checks, upload limits, export gate")
+        Container(orch, "Orchestrator", "Python (pipeline.py)", "Fixed order; 4 specialists in parallel; degraded mode")
+        Container(core, "Agents, rules, grounding, judge", "Python, pure (agents/, rules/, grounding.py)", "8 agents; R1–R6, F1, S1–S4, C1–C2; verbatim grounding; rule-only score")
+        Container(llm, "LLM client layer", "Python, httpx (llm/)", "DevAIFlowClient (default) | OpenAI-compatible | offline mock")
+        Container(store, "Store", "Python, sqlite3 (store.py)", "Only writer; append-only decisions")
+        ContainerDb(db, "Database", "SQLite file", "runs, requirements, findings, tests, decisions")
+    }
+    System_Boundary(devai, "DevAI Desktop (local)") {
+        Container_Ext(flows, "Flow API :7583", "DevAI scheduler", "8 webhook flows reqguard-<name>, run status")
+        Container_Ext(host, "DevAI host :7588", "DevAI host", "8 agents reqguard-<name>; modelId")
+    }
+    System_Ext(model, "Language model", "anthropic/claude-haiku-4.5 (global DevAI setting)")
+    Rel(eng, ui, "Uses", "HTTPS")
+    Rel(rev, ui, "Uses", "HTTPS")
+    Rel(ui, api, "JSON calls", "HTTP")
+    Rel(api, orch, "review() / write_tests()", "function call")
+    Rel(api, store, "save_run, add_decision, get_run", "function call")
+    Rel(store, db, "Reads / writes", "sqlite3")
+    Rel(orch, core, "Passes text, receives values", "function call")
+    Rel(core, llm, "complete(system, user, agent)", "function call")
+    Rel(llm, flows, "POST /webhook, GET run", "HTTP / JSON")
+    Rel(llm, host, "GET / (modelId), once per run", "HTTP / JSON")
+    Rel(flows, host, "Runs agent reqguard-<name>", "internal")
+    Rel(host, model, "Completions", "HTTPS")
+```
+
+---
+
 ## 1. Shared elements (both options)
 
 ### 1.1 Bounded contexts
@@ -23,6 +92,8 @@ Process followed (Week 7): generate two deliberately different options → evalu
 The key boundary: **Analysis is pure**. Agents and rules receive text and return values; they never read or write the database and never call the web layer. Only the Pipeline persists their results. This is what keeps the rule engine and agents mutation-testable with a mocked LLM.
 
 ### 1.2 Agents (roles, tools, inputs/outputs, handoffs, stopping conditions)
+
+> **Superseded (v0.2).** This three-agent table is the M1 plan, kept as history. The built system has eight agents and runs them through DevAI flows: see [Current architecture (v0.2, DevAI)](#current-architecture-v02-devai) above.
 
 | Agent | Role | Permitted tools | Input | Output (schema-validated JSON) | Hands off to | Stopping conditions | Human approval point |
 |---|---|---|---|---|---|---|---|
