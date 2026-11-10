@@ -57,6 +57,9 @@ def test_upload_rules(client):
     assert len(edge) == 200_000
     assert client.post("/api/runs/upload", files={"file": ("edge.txt", edge, "text/plain")},
                        headers=ENG).status_code == 200
+    arabic = "يجب أن يكون النظام سريعاً وسهل الاستخدام.\n".encode()
+    r = client.post("/api/runs/upload", files={"file": ("ar.txt", arabic, "text/plain")}, headers=ENG)
+    assert r.status_code == 422 and "English" in r.json()["detail"]
 
 
 @pytest.mark.parametrize("reason,status", [(None, 422), ("x" * 9, 422), ("x" * 10, 200), ("x" * 500, 200),
