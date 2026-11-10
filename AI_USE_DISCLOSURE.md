@@ -42,7 +42,7 @@ _Keep this table accurate. If the instructor restricts tools to DevAI only, rais
 ## 4. Provenance
 
 - Raw AI output is committed separately from human fixes: commit messages `raw(ai): …` and `fix(human): …`.
-- AI-generated files carry a `Co-authored-by:` trailer naming the tool.
+- AI involvement is recorded in this disclosure log (tools, areas, and the files each member reviewed) rather than in commit trailers.
 - Named reader of each generated file:
 
 | File | Read and checked by |
@@ -115,7 +115,7 @@ DevAI usage page during M1: _fill input/output tokens and requests_. Cash cost t
 
 ### 8.5 Provenance, data and cost
 
-- Commits for this work carry a `Co-Authored-By: Claude Opus 5.5` trailer. They were **not** split into `raw(ai)` / `fix(human)` commits as section 4 describes; the decisions in 8.2 and 8.4 are the human part.
+- Commits for this work carry no AI co-author trailer: the trailers first added were removed from the history on 10 November 2026, and AI involvement is recorded in this log instead (section 4). The commits were **not** split into `raw(ai)` / `fix(human)` commits as section 4 describes; the decisions in 8.2 and 8.4 are the human part.
 - Only synthetic data was sent to any model: `benchmark/srs_inventory_v1.md` and the idea "A mobile app for students to book study rooms". No secrets: DevAI runs locally with no key in ReqGuard.
 - Claude Code read DevAI Desktop's installed files only to learn its formats. No DevAI code was copied into ReqGuard.
 - Estimated tokens per 40-requirement benchmark run (ReqGuard's 4-characters-per-token estimate, 6 calls): about 11,200 input and 7,000 output. DevAI adds its own instructions, so real usage is higher. DevAI usage page: _fill_.
