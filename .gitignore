@@ -16,3 +16,4 @@ uploads/
 .vscode/
 .idea/
 reqguard.db
+.claude/
