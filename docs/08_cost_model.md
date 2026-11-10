@@ -36,7 +36,7 @@ Source: DeepSeek *Models & Pricing* — https://api-docs.deepseek.com/quick_star
 |---|---|---|---|
 | DevAI requirements draft (Prompt 1) | _fill from Usage page_ | _fill_ | DevAI Usage page, before/after difference |
 | DevAI architecture draft (Prompt 2) | _fill_ | _fill_ | same |
-| **Extractor v0 on `srs_inventory_v1.md`** | _fill_ | _fill_ | same, with `prompts/extractor_v0.md` |
+| **Extractor v0 on `srs_inventory_v1.md`** | _fill_ | _fill_ | same, with `docs/ai_drafts/extractor_v0.md` |
 
 When the Extractor measurement is available, the model is **calibrated**: `python tools/cost_model.py --measured-extractor-in <in> --measured-extractor-out <out>` scales every stage by the measured/estimated ratio. The calibrated output replaces §4 below.
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Iterable
+from collections.abc import Iterable
 
 _NUMBER_WITH_UNIT = re.compile(r"\d")
 

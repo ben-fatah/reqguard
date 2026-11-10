@@ -21,8 +21,9 @@ import logging
 import os
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import httpx
 
@@ -76,7 +77,7 @@ class DevAIFlowClient:
         self._prompt_checked: set[str] = set()
 
     @classmethod
-    def from_env(cls) -> "DevAIFlowClient":
+    def from_env(cls) -> DevAIFlowClient:
         return cls(base_url=os.getenv("REQGUARD_DEVAI_URL") or DEFAULT_FLOW_URL,
                    host_url=os.getenv("REQGUARD_DEVAI_HOST_URL") or DEFAULT_HOST_URL,
                    timeout=float(os.getenv("REQGUARD_DEVAI_TIMEOUT") or DEFAULT_TIMEOUT))

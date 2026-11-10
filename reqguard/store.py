@@ -10,7 +10,7 @@ import os
 import sqlite3
 import threading
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .models import RunResult, TestCase, Usage
 
@@ -39,7 +39,7 @@ REWRITE_EXCLUDED_AGENTS = {"consistency"}
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 class Store:
@@ -96,9 +96,6 @@ class Store:
             " (SELECT COUNT(*) FROM findings f WHERE f.run_id=r.id) AS findings,"
             " substr(r.source_text, 1, 80) AS preview FROM runs r ORDER BY r.id DESC LIMIT 50").fetchall()
         return [dict(x) for x in rows]
-
-    def exists(self, run_id: int) -> bool:
-        return self._db.execute("SELECT 1 FROM runs WHERE id=?", (run_id,)).fetchone() is not None
 
     def get_run(self, run_id: int) -> dict | None:
         run = self._db.execute("SELECT * FROM runs WHERE id=?", (run_id,)).fetchone()

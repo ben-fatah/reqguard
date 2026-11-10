@@ -134,7 +134,7 @@ def status_rows(api: DevAI) -> list[dict]:
 
 
 def print_rows(rows: list[dict]) -> bool:
-    yn = lambda b: "yes" if b else "NO"   # noqa: E731
+    yn = lambda b: "yes" if b else "NO"
     print(f"{'DevAI id':<26} {'agent':<6} {'prompt current':<15} {'flow':<6} {'flow config':<11}")
     for r in rows:
         print(f"{r['id']:<26} {yn(r['agent']):<6} {yn(r['prompt']):<15} {yn(r['flow']):<6} {yn(r['flow_ok']):<11}")

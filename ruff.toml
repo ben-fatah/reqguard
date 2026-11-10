@@ -1,0 +1,7 @@
+# Lint config: `pip install ruff` (dev only), then `ruff check .`
+[lint]
+ignore = [
+    "B008",    # FastAPI's documented Depends(...) / File(...) default-argument pattern
+    "I001",    # keep the project's wrapped import style
+    "RUF022",  # agents/__init__.py __all__ is in pipeline order on purpose
+]

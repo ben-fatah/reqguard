@@ -9,15 +9,13 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from ..llm import LLMClient, LLMError
 from ..models import Usage
 
 PROMPTS = Path(__file__).resolve().parent.parent / "prompts"
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$", re.IGNORECASE)
-
-Validator = Callable[[Any], list[str]]   # returns a list of problems; empty = valid
 
 
 class AgentError(RuntimeError):

@@ -29,6 +29,8 @@ python -m reqguard.bench          # rule precision / recall on the labelled benc
 python -m pytest -q               # 112 tests
 ```
 
+Lint (dev only, not in `requirements.txt`): `pip install ruff`, then `ruff check .`
+
 ## Run with DevAI
 
 With DevAI, all eight agents run as **DevAI agents inside DevAI flows** on your machine. The Python orchestrator still runs the fixed order, the rules, the grounding check, the store, the API and the UI. Only the language-model calls go to DevAI.

@@ -105,5 +105,5 @@ def test_ai_findings_do_not_change_the_score():
     assert sum(f.source == "ai" for f in plain.findings) == 0
     assert sum(f.source == "ai" for f in extra.findings) == 44      # 4 specialists x (10 + 1), all shown
     assert (extra.score, extra.grade) == (plain.score, plain.grade)
-    rules = lambda r: sorted((f.req_id, f.rule_id) for f in r.findings if f.source == "rule")  # noqa: E731
+    rules = lambda r: sorted((f.req_id, f.rule_id) for f in r.findings if f.source == "rule")
     assert rules(extra) == rules(plain)
