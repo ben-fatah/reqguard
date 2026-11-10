@@ -5,7 +5,8 @@ from pathlib import Path
 import pytest
 
 from reqguard.llm import MockLLM
-from reqguard.pipeline import Orchestrator, PipelineError
+from reqguard.pipeline import (MIN_LATIN_LETTER_SHARE, Orchestrator, PipelineError, latin_letter_share,
+                               require_english)
 
 ROOT = Path(__file__).resolve().parent.parent
 BENCH = (ROOT / "benchmark" / "srs_inventory_v1.md").read_text(encoding="utf-8")
@@ -58,6 +59,38 @@ def test_requires_exactly_one_input():
         Orchestrator(MockLLM()).review()
     with pytest.raises(PipelineError):
         Orchestrator(MockLLM()).review(text="x shall y", idea="z")
+
+
+ARABIC_SRS = ("1. يجب أن يكون النظام سريعاً وسهل الاستخدام.\n"
+              "2. يجب أن تنتهي الجلسة بعد 15 دقيقة.\n"
+              "3. يجب أن تنتهي الجلسة بعد 30 دقيقة.\n")
+
+
+def test_non_english_document_is_refused_before_any_agent_call():
+    llm = MockLLM()
+    with pytest.raises(PipelineError, match="English requirements only"):
+        Orchestrator(llm).review(text=ARABIC_SRS)
+    assert llm.calls == []
+
+
+@pytest.mark.parametrize("text,share", [("", 1.0), ("REQ-01 123 !", 1.0), ("abcd", 1.0),
+                                        ("abcdefgh", 1.0), ("abcdefghxy" + "س" * 2, 10 / 12)])
+def test_latin_letter_share(text, share):
+    assert latin_letter_share(text) == pytest.approx(share)
+
+
+def test_english_srs_with_a_few_non_latin_names_is_accepted():
+    text = BENCH + "\nContact: محمد العتيبي, Jürgen Müller.\n"
+    assert latin_letter_share(text) >= MIN_LATIN_LETTER_SHARE
+    Orchestrator(MockLLM()).review(text=text)
+
+
+def test_letter_share_threshold_boundary():
+    at = "a" * 80 + "س" * 20          # exactly 0.8 -> accepted
+    below = "a" * 79 + "س" * 21       # 0.79 -> refused
+    require_english(at)
+    with pytest.raises(PipelineError, match="English"):
+        require_english(below)
 
 
 def test_document_without_requirements():

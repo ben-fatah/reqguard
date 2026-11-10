@@ -13,10 +13,27 @@ from .llm import LLMClient, get_client
 from .models import RunResult, TestCase, Usage
 
 MAX_DOCUMENT_BYTES = 200_000
+# The rule word lists are English (charter NG-6). A document whose letters are mostly not
+# Latin would get no rule findings and a perfect score, so it is refused instead.
+MIN_LATIN_LETTER_SHARE = 0.8
 
 
 class PipelineError(RuntimeError):
     """A stage failed and the run cannot continue (for example extraction failed)."""
+
+
+def latin_letter_share(text: str) -> float:
+    """Share of the letters in `text` that are ASCII a-z / A-Z (1.0 if there are no letters)."""
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return 1.0
+    return sum(c.isascii() for c in letters) / len(letters)
+
+
+def require_english(text: str) -> None:
+    if latin_letter_share(text) < MIN_LATIN_LETTER_SHARE:
+        raise PipelineError("ReqGuard reviews English requirements only: the document is mostly "
+                            "in another language or script. Translate it to English and try again.")
 
 
 class Orchestrator:
@@ -48,6 +65,7 @@ class Orchestrator:
         assert text is not None
         if len(text.encode("utf-8")) > MAX_DOCUMENT_BYTES:
             raise PipelineError("The document is larger than 200 KB.")
+        require_english(text)
 
         try:
             requirements, dropped = ExtractorAgent(self.llm, u("extractor")).run(text)

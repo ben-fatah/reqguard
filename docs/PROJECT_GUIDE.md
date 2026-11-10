@@ -77,7 +77,7 @@ Every file in the repository except `.venv/`, caches and `.git/`. "Uses" lists t
 | `prompts/<agent>.md` (8 files) | One instruction file per agent: `idea_to_srs`, `extractor`, `functional`, `non_functional`, `security`, `consistency`, `judge`, `test_writer`. | — |
 | `web/index.html` | The single-page user interface (HTML, CSS and JavaScript in one file). | calls the API |
 
-### Tests `tests/` (113 tests, Section 9)
+### Tests `tests/` (121 tests, Section 9)
 
 | File | What it tests |
 |---|---|
@@ -1060,7 +1060,7 @@ REQ-01 now has no open findings, so it is "ready", and its `final_text` is what 
 
 ## 9. Tests
 
-Run them with `python -m pytest -q`: **113 tests, about 5 seconds, no network, no DevAI and no API key needed.** They use the **offline mock** `MockLLM` (`llm/mock.py`), a fake model that answers every agent in the correct JSON shape from fixed templates:
+Run them with `python -m pytest -q`: **121 tests, about 5 seconds, no network, no DevAI and no API key needed.** They use the **offline mock** `MockLLM` (`llm/mock.py`), a fake model that answers every agent in the correct JSON shape from fixed templates:
 - the Extractor keeps lines containing shall / should / must / may / will;
 - the specialists return template rewrites for the rule findings they receive;
 - the Judge writes a fixed summary;
@@ -1100,7 +1100,7 @@ Lint with `pip install ruff` then `ruff check .`. Rules R1–R6 can also be meas
 ```bash
 python -m venv .venv && .venv\Scripts\activate       # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-python -m pytest -q                                  # 113 tests, offline
+python -m pytest -q                                  # 121 tests, offline
 ```
 
 | Goal | Command |

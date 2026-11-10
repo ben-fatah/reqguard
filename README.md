@@ -26,7 +26,7 @@ Command line, without the web app:
 python -m reqguard review benchmark/srs_inventory_v1.md
 python -m reqguard idea "A mobile app for students to book study rooms"
 python -m reqguard.bench          # rule precision / recall on the labelled benchmark
-python -m pytest -q               # 113 tests
+python -m pytest -q               # 121 tests
 ```
 
 Lint (dev only, not in `requirements.txt`): `pip install ruff`, then `ruff check .`
@@ -143,7 +143,7 @@ reqguard/
   report.py     Markdown export
   bench.py      precision/recall on the labelled benchmark
   web/          single-page interface
-tests/          113 pytest tests
+tests/          121 pytest tests
 benchmark/      synthetic SRS with planted defects + labels
 docs/           M1 documents (charter, requirements, ADRs, risks, cost model)
 ```
