@@ -63,7 +63,7 @@ Write a synthetic 40-requirement SRS for a library room-booking system with plan
 **P10. Agents**
 
 ```
-Our instructor wants more agents. Redesign ReqGuard as 8 agents: Idea-to-SRS, Extractor, Functional, Non-functional, Security, Consistency, Judge and Test-writer. A fixed Python orchestrator decides the order, the four specialists run in parallel, and no agent decides what happens next. Give each agent its input, its JSON output and the Python check that rejects a bad reply.
+Redesign ReqGuard as 8 agents: Idea-to-SRS, Extractor, Functional, Non-functional, Security, Consistency, Judge and Test-writer. A fixed Python orchestrator decides the order, the four specialists run in parallel, and no agent decides what happens next. Give each agent its input, its JSON output and the Python check that rejects a bad reply.
 ```
 
 **P11. Rules first**
@@ -107,7 +107,7 @@ The specialist agents return too many findings and long suggestions. Change thei
 **P17. DevAI integration**
 
 ```
-ReqGuard must use only DevAI. Publish the 8 agents in our local DevAI, each in its own flow, and make the Python orchestrator call them through the DevAI API: start a run with the webhook, poll the run until it ends, and read the agent's reply. Give every agent the smallest tool set in an empty folder. Add setup, check and ping commands.
+Publish the 8 agents in our local DevAI, each in its own flow, and make the Python orchestrator call them through the DevAI API: start a run with the webhook, poll the run until it ends, and read the agent's reply. Give every agent the smallest tool set in an empty folder. Add setup, check and ping commands.
 ```
 
 **P18. Score**
@@ -119,7 +119,7 @@ Two reviews of the same document gave scores 31 and 25. Find why, and make the s
 **P19. Empty reply**
 
 ```
-DevAI marks a run as successful but returns an empty reply, and the review fails with "invalid JSON". Find the cause and show a clear error message instead.
+You marked a run as successful but return an empty reply, causing the review to fail with 'invalid JSON'. Find the cause and show a clear error message instead.
 ```
 
 ## 4. Fixes
@@ -175,7 +175,7 @@ Give us step-by-step instructions to test ReqGuard locally with DevAI, with SRS 
 **P27. Grader guide**
 
 ```
-Add a short, clear section at the top of the README so the grader can install, run the tests, connect the agents to DevAI and try one review in 5 minutes.
+Add a short, clear section at the top of the README so the grader can install, run the tests, connect the agents and try one review in 5 minutes.
 ```
 
 ## 8. Agent prompts inside ReqGuard
