@@ -15,7 +15,7 @@ Web App	React/Vite SPA	Rich, keyboard-operable review UI (WCAG 2.2 AA), best fit
 Database	PostgreSQL (+ JSONB)	ACID for decisions/audit; row-level locking for per-item review; JSONB for flexible AI metadata.
 Queue / Cache	Redis + Celery	Celery runs the AI pipeline off the request path; Redis is the broker and the pub/sub channel for streaming progress (NFR-01).
 Object Storage	S3-compatible (MinIO locally, AWS S3 in prod)	Raw SRS files; uploads may be large and are byte-addressed by hash for dedup.
-AI Layer	LiteLLM (provider abstraction) + structured JSON output	Swappable models (GPT/Claude/self-hosted); prompt templates kept separate; failures/retries are centralized.
+AI Layer	LiteLLM (provider abstraction) + structured JSON output	Swappable models (hosted or self-hosted); prompt templates kept separate; failures/retries are centralized.
 Auth	JWT + FastAPI role dependency	Implements NFR-03 RBAC (engineer vs reviewer) at the API boundary.
 Retrieval (optional, v2)	pgvector on Postgres	Requirement similarity / duplicate-requirement detection; not required for v1.
 2. Component Breakdown

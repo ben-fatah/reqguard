@@ -99,7 +99,7 @@ Every file in the repository except `.venv/`, caches and `.git/`. "Uses" lists t
 | `RULES.md` | Team rules: stack, boundaries, "keep pytest and ruff green", security, provenance. |
 | `AI_USE_DISCLOSURE.md` | AI-use log: tools, contributions, errors and rejected suggestions. |
 | `.env.example` | Configuration template (copy to `.env`; `.env` is git-ignored). |
-| `.gitignore` | Ignores `.env`, keys, caches, `.venv/`, `*.db`, and `.claude/` (local editor settings). |
+| `.gitignore` | Ignores `.env`, keys, caches, `.venv/`, `*.db`, and local editor settings folders. |
 | `requirements.txt` | Runtime dependencies: fastapi, uvicorn, httpx, pydantic, python-multipart, pytest. |
 | `pytest.ini` | `testpaths = tests`; hides deprecation warnings. |
 | `ruff.toml` | Lint settings (ignores B008, I001, RUF022 with reasons). |
