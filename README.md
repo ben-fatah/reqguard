@@ -4,6 +4,58 @@ A multi-agent requirements review crew. Give it an SRS (or just a project idea) 
 
 **Team:** Abderrahmane Benfatah (444106928), Omar Ramadhan (444106902) · SWE 485, King Saud University · Python 3.12+
 
+## For the grader (5 minutes)
+
+**You need:** Python 3.12+. For the AI agents, also **DevAI Desktop** open and signed in. Without DevAI the app still runs on an offline mock model (rules, score and review all work; no AI advice).
+
+**1. Install and run the tests**
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate             # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python -m pytest -q                # 121 tests, offline, about 5 s
+```
+
+**2. Put the 8 agents into your DevAI** (skip this step to run offline)
+
+```bash
+copy .env.example .env             # macOS/Linux: cp .env.example .env
+python -m reqguard.devai setup     # creates the 8 reqguard-* agents and flows in DevAI
+python -m reqguard.devai ping      # one real agent call; prints the reply
+```
+
+**3. Start the app**
+
+```bash
+uvicorn reqguard.api:app
+```
+
+Open http://127.0.0.1:8000. The top bar shows `model: devai-flow` (or `mock` when offline).
+
+**4. Try it.** As **Engineer**, paste this SRS and press **Run review** (about 40 s with DevAI):
+
+```text
+Users shall create study room bookings.
+The system should respond quickly.
+A session shall time out after 20 minutes.
+The session shall end after 1 hour of inactivity.
+The system shall store each student's phone number.
+Passwords shall be saved.
+The system shall support students, staff, etc.
+The admin shall approve bookings and must send a confirmation email.
+The system shall export reports as CSV files.
+The system shall export the reports as CSV files.
+```
+
+Expected: **score 69, "High risk", 13 rule findings** (the score uses the deterministic rules only, so it is the same with or without DevAI), plus AI advisory findings when DevAI is on. Then switch to **Reviewer**, accept, edit or reject each finding, press **Generate tests**, and **Export report**.
+
+If you see "DevAI returned an empty reply", DevAI cannot reach its model: check the network or VPN and the DevAI sign-in.
+
+Full explanation of the design and code: [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md).
+
+---
+
 ## Quick start
 
 ```bash
